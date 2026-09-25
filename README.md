@@ -147,8 +147,4 @@ The multi-stage image installs production dependencies, runs as the non-root `no
 - The service has no user accounts. A share link is a bearer capability, not identity-based authorization.
 - Larger PDFs, damaged files, scans without an AI key, unsupported model IDs, or upstream timeouts can fail with a readable error or rule-based fallback.
 
-## Hackathon submission
-
-Submit a public repository with exactly one branch, under 10 MB excluding dependencies, and a maximum of three attempts per the supplied rules. Exclude `node_modules`, `.next`, `dist`, `.vercel`, `data`, coverage, and credentials. This working repository is private at the owner's request. The supplied hackathon rules require the final submission repository to be public; change visibility only when the owner authorizes submission.
-
 MIT licensed. See LICENSE.
