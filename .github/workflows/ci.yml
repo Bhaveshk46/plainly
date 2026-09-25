@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      SHARES_ENABLED: 'false'
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - name: Smoke test production server
+        run: |
+          npm start > /tmp/plainly-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://localhost:3000/api/health; then break; fi
+            sleep 2
+          done
+          npm run test:smoke
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+  deploy:
+    name: Stage, smoke test, and promote to Vercel
+    needs: [verify, container]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.VERCEL_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: production
+    concurrency:
+      group: vercel-production
+      cancel-in-progress: false
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Validate deployment credentials
+        run: |
+          test -n "$VERCEL_TOKEN" || { echo 'Missing VERCEL_TOKEN'; exit 1; }
+          test -n "$VERCEL_ORG_ID" || { echo 'Missing VERCEL_ORG_ID'; exit 1; }
+          test -n "$VERCEL_PROJECT_ID" || { echo 'Missing VERCEL_PROJECT_ID'; exit 1; }
+      - run: npm ci
+      - run: npm install --global vercel@60.0.1
+      - run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - run: vercel build --prod --token="$VERCEL_TOKEN"
+      - name: Stage without changing the live domain
+        id: stage
+        run: |
+          URL=$(vercel deploy --prebuilt --prod --skip-domain --token="$VERCEL_TOKEN")
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+      - name: Verify staged deployment
+        env:
+          SMOKE_URL: ${{ steps.stage.outputs.url }}
+        run: npm run test:smoke
+      - name: Promote verified deployment
+        env:
+          DEPLOYMENT_URL: ${{ steps.stage.outputs.url }}
+        run: vercel promote "$DEPLOYMENT_URL" --yes --token="$VERCEL_TOKEN"
+
+  container:
+    name: Build and smoke test container
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: docker build -t plainly:ci .
+      - name: Verify container startup
+        run: |
+          docker run --detach --name plainly-ci -p 8080:8080 -e SHARES_ENABLED=false plainly:ci
+          trap 'docker logs plainly-ci; docker rm -f plainly-ci' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://localhost:8080/api/health; then break; fi
+            sleep 2
+          done
+          SMOKE_URL=http://localhost:8080 npm run test:smoke

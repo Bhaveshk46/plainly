@@ -1,0 +1,251 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+
+/* Dark mode is driven by data-theme on <html> (set from the user's saved choice
+   or the OS preference), so every `dark:` utility follows the in-app toggle. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* ==========================================================================
+   Design tokens. Every text/background pair used below meets WCAG 2.2 AA
+   (4.5:1) in both themes; risk is also shown by shape + label, never colour alone.
+   ========================================================================== */
+:root {
+  color-scheme: light;
+  --bg: #f7f8f4;
+  --surface: #ffffff;
+  --surface-2: #edf1eb;
+  --fg: #192d2b;
+  --muted: #526460;
+  --line: #d8e1db;
+  --brand: #176354;
+  --brand-hover: #104c40;
+  --brand-fg: #ffffff;
+  --brand-soft: #e8f2eb;
+  --brand-text: #176354;
+  --accent-a: #176354;
+  --accent-b: #3a705c;
+
+  --high: #a12313;
+  --high-bg: #fdeceb;
+  --high-line: #ecaba4;
+  --medium: #8a4b00;
+  --medium-bg: #fff4dc;
+  --medium-line: #e8c56f;
+  --low: #0b6b3a;
+  --low-bg: #e6f6ec;
+  --low-line: #a0d6b4;
+  --info: #3b4a5e;
+  --info-bg: #eef1f5;
+  --info-line: #c3ccd8;
+
+  --ins-bg: #d5f3e0;
+  --del-bg: #fbdcd8;
+  --mark: #fff0b3;
+
+  --shadow-sm: 0 1px 2px rgb(18 23 43 / 6%);
+  --shadow-md: 0 1px 2px rgb(18 23 43 / 5%), 0 8px 24px rgb(18 23 43 / 7%);
+  --shadow-lg: 0 2px 4px rgb(18 23 43 / 6%), 0 18px 48px rgb(18 43 33 / 9%);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #101c19;
+  --surface: #192923;
+  --surface-2: #22372e;
+  --fg: #eaf2ec;
+  --muted: #b0c2b8;
+  --line: #3b5145;
+  --brand: #9cdbb9;
+  --brand-hover: #bcebd0;
+  --brand-fg: #101c19;
+  --brand-soft: #233d30;
+  --brand-text: #a8e2c2;
+  --accent-a: #a8e2c2;
+  --accent-b: #c5e3c0;
+
+  --high: #ffb4ab;
+  --high-bg: #3a1613;
+  --high-line: #6b2b25;
+  --medium: #ffd48a;
+  --medium-bg: #33260a;
+  --medium-line: #64481a;
+  --low: #8fe0ae;
+  --low-bg: #0f2c1b;
+  --low-line: #245a3a;
+  --info: #b9c5d5;
+  --info-bg: #222c39;
+  --info-line: #3a4759;
+
+  --ins-bg: #123a25;
+  --del-bg: #4a1d19;
+  --mark: #4a3f0f;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 30%);
+  --shadow-md: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 30%);
+  --shadow-lg: 0 2px 4px rgb(0 0 0 / 30%), 0 18px 48px rgb(0 0 0 / 40%);
+}
+
+@theme inline {
+  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', 'Noto Sans Devanagari', 'Noto Sans Bengali', 'Noto Sans Tamil', 'Noto Sans Arabic', 'Helvetica Neue', Arial, sans-serif;
+  --font-serif: Georgia, 'Iowan Old Style', 'Noto Serif', 'Times New Roman', serif;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-fg: var(--brand-fg);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-text: var(--brand-text);
+  --color-accent-a: var(--accent-a);
+  --color-accent-b: var(--accent-b);
+
+  --color-high: var(--high);
+  --color-high-bg: var(--high-bg);
+  --color-high-line: var(--high-line);
+  --color-medium: var(--medium);
+  --color-medium-bg: var(--medium-bg);
+  --color-medium-line: var(--medium-line);
+  --color-low: var(--low);
+  --color-low-bg: var(--low-bg);
+  --color-low-line: var(--low-line);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-info-line: var(--info-line);
+  --color-ins: var(--ins-bg);
+  --color-del: var(--del-bg);
+  --color-mark: var(--mark);
+
+  --shadow-card: var(--shadow-md);
+  --shadow-pop: var(--shadow-lg);
+}
+
+/* ---------- Base ---------- */
+html {
+  font-size: var(--root-size, 100%);
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 5.5rem;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(60rem 30rem at 85% -10%, color-mix(in srgb, var(--brand) 5%, transparent), transparent 70%),
+    radial-gradient(50rem 26rem at -10% 10%, color-mix(in srgb, var(--accent-b) 3%, transparent), transparent 70%);
+  background-repeat: no-repeat;
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-feature-settings: 'cv11', 'ss01';
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+}
+
+:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--brand) 28%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .forced-border {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* Keyframes referenced by utilities */
+@keyframes plainly-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes plainly-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes plainly-flash {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  30% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 45%, transparent);
+  }
+}
+
+.animate-spin-slow {
+  animation: plainly-spin 0.9s linear infinite;
+}
+.animate-rise {
+  animation: plainly-rise 0.35s ease-out both;
+}
+.animate-flash {
+  animation: plainly-flash 1.4s ease-out 1;
+}
+
+/* Radix accordion open/close */
+[data-state='open'] > .accordion-chevron {
+  transform: rotate(180deg);
+}
+
+/* Original-language quotes read like excerpts from a document */
+.quote-text {
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+
+/* ---------- Print: only the lawyer brief ---------- */
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  a {
+    color: #000;
+  }
+}
+.print-only {
+  display: none;
+}
+
+/* A grid with no explicit columns gets one `auto` track, which cannot shrink below
+   its content and pushes the page wider than the viewport. Make it shrinkable. */
+@layer base {
+  .grid:not([class*='grid-cols']):not([class*='place-content-center']) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

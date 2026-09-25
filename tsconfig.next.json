@@ -1,0 +1,30 @@
+{
+  "extends": "./tsconfig.web.json",
+  "compilerOptions": {
+    "types": [
+      "node"
+    ],
+    "allowJs": true,
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    "src/app/**/*.ts",
+    "src/app/**/*.tsx",
+    "src/pages/**/*.ts",
+    "src/proxy.ts",
+    "src/web/**/*.ts",
+    "src/web/**/*.tsx",
+    "src/shared/**/*.ts",
+    ".next/types/**/*.ts",
+    "src/server/express.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
